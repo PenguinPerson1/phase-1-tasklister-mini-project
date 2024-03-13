@@ -35,3 +35,22 @@ button {
   border-radius: 5px;
   box-shadow: 2px 5px 5px #333;
 }
+
+.li-list p {
+  display: inline-block;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+.delete-button {
+  font-size: 15px;
+  font-display: bold;
+}
+#high-priority-tasks p{
+  color: red;
+}
+#med-priority-tasks p{
+  color: #FFBF00;
+}
+#low-priority-tasks p{
+  color: green;
+}
