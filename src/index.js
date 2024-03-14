@@ -5,18 +5,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const dateField = document.querySelector("#new-task-date")
   const newTaskForm = document.querySelector("#create-task-form");
 
+  // A custom funciton to create and append / store an element
+  // Only works with basic attributes that most elements use
+  function createSimpleElement(element,text,className,location,value) {
+    const task = document.createElement(element);
+    task.className = className;
+    task.textContent = text;
+    if(value!==undefined){
+      task.value = value;
+    }
+    if(location!==undefined){
+      location.append(task);
+    }
+    return task;
+  }
+  // Moves an element to the destination
   function moveElement(element,destination) {
     inTransit = element;
     inTransit.remove();
-    console.log(element);
     destination.append(inTransit);
   }
-
-  newTaskForm.addEventListener("submit", (target) => {
-    target.preventDefault();
+  // When the form is submitted, it creates and adds a task to the list
+  newTaskForm.addEventListener("submit", event => {
+    event.preventDefault();
     const li = document.createElement("li");
     li.className = "li-list";
-
+    
     const dropdown = document.createElement("select");
     dropdown.name = "priority";
     dropdown.className = "priority-select";
@@ -30,37 +44,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const priorityNames = ["High Priority","Medium Priority","Low Priority"];
     for (let i = 0; i < 3; i++) {
-      const option = document.createElement("option");
-      option.value = (i).toString();
-      option.textContent = priorityNames[i];
-      option.className = "priority-options"
-      dropdown.append(option);
+      createSimpleElement("option",priorityNames[i],"priority-options",dropdown,(i).toString());
     }
 
     li.append(dropdown);    
 
-    const p = document.createElement("p");
-    p.textContent = `${inputField.value} by ${dateField.value}`;
-
-    const button = document.createElement("button");
-    button.className = "delete-button";
-    button.textContent = "X"
-
-    li.append(p);
-    li.append(button);
+    createSimpleElement("p",`${inputField.value} by ${dateField.value}`,"task-text",li);
+    createSimpleElement("button","X","delete-button",li);
 
     undecidedTasks.append(li);
-
     inputField.value="";
   });
-
-  tasksLists.addEventListener("click", (event) => {
+  // When the delete button is pressed, it deletes that task
+  tasksLists.addEventListener("click", event => {
     if(event.target.className === "delete-button"){
       event.target.parentNode.remove();
     }
   });
-
-  tasksLists.addEventListener("change", (event) => {
+  // When a task is selected, the task is replaced with a text box to edit it
+  tasksLists.addEventListener("selectstart", event =>{
+    if (event.target.parentNode.className === "task-text") {
+      const textToChange = event.target.parentNode;
+      textToChange.replaceWith(createSimpleElement("input","","edit-box",undefined,textToChange.textContent));
+     }
+  })
+  // When the enter key is pressed, the edit box is replaced with the edited text
+  tasksLists.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && event.target.className === "edit-box") {
+      event.target.replaceWith(createSimpleElement("p",event.target.value,"task-text"));
+    }
+  });
+  // When the dropdown menu is changed, the task is moved to the correct list
+  document.addEventListener("change", event => {
     if(event.target.className===("priority-select")){
       switch (event.target.value) {
         case "0":
@@ -73,8 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
           moveElement(event.target.parentNode,document.getElementById("low-priority-tasks"));
           break;
         default:
-          event.target.parentNode.getElementsByTagName("p")[0].style.color = "blue";
-          console.log("it isn't reading the dropdown correctly");
+          console.log("Error: it isn't reading the dropdown correctly");
           break;
       }
     }
