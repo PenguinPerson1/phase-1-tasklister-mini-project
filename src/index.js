@@ -1,3 +1,24 @@
+
+// A custom funciton to create and append / store an element
+// Only works with basic attributes that most elements use
+function createSimpleElement(element,text,className,location,value) {
+  const elem = document.createElement(element);
+  elem.className = className;
+  elem.textContent = text;
+  if(value!==undefined){
+    elem.value = value;
+  }
+  if(location!==undefined){
+    location.append(elem);
+  }
+  return elem;
+}
+// Moves an element to the destination
+function moveElement(element,destination) {
+  inTransit = element;
+  inTransit.remove();
+  destination.append(inTransit);
+}
 document.addEventListener("DOMContentLoaded", () => {
   const undecidedTasks = document.querySelector("#undecided-tasks");
   const tasksLists = document.querySelector("#list");
@@ -5,26 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const dateField = document.querySelector("#new-task-date")
   const newTaskForm = document.querySelector("#create-task-form");
 
-  // A custom funciton to create and append / store an element
-  // Only works with basic attributes that most elements use
-  function createSimpleElement(element,text,className,location,value) {
-    const task = document.createElement(element);
-    task.className = className;
-    task.textContent = text;
-    if(value!==undefined){
-      task.value = value;
-    }
-    if(location!==undefined){
-      location.append(task);
-    }
-    return task;
-  }
-  // Moves an element to the destination
-  function moveElement(element,destination) {
-    inTransit = element;
-    inTransit.remove();
-    destination.append(inTransit);
-  }
   // When the form is submitted, it creates and adds a task to the list
   newTaskForm.addEventListener("submit", event => {
     event.preventDefault();
@@ -46,10 +47,10 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let i = 0; i < 3; i++) {
       createSimpleElement("option",priorityNames[i],"priority-options",dropdown,(i).toString());
     }
-
     li.append(dropdown);    
 
-    createSimpleElement("p",`${inputField.value} by ${dateField.value}`,"task-text",li);
+    // If there is a date provided, it includes ' by ', but if there is no date provided, just the task is added
+    createSimpleElement("p",`${inputField.value}${dateField.value!==""?" by ":""}${dateField.value}`,"task-text",li);
     createSimpleElement("button","X","delete-button",li);
 
     undecidedTasks.append(li);
@@ -64,10 +65,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // When a task is selected, the task is replaced with a text box to edit it
   tasksLists.addEventListener("selectstart", event =>{
     if (event.target.parentNode.className === "task-text") {
+      event.preventDefault();
       const textToChange = event.target.parentNode;
-      textToChange.replaceWith(createSimpleElement("input","","edit-box",undefined,textToChange.textContent));
+      const editBox = createSimpleElement("input","","edit-box",undefined,textToChange.textContent);
+      textToChange.replaceWith(editBox);
+      editBox.focus();
      }
-  })
+  });
   // When the enter key is pressed, the edit box is replaced with the edited text
   tasksLists.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && event.target.className === "edit-box") {
